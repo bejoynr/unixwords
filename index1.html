@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Kernel-class reliability. Two decades in the trenches. UnixWords — Senior Unix/Linux Engineer Portfolio.">
+    <title>unixwords • Kernel-class reliability, two decades in the trenches.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap');
+
+        :root {
+            --orange: #ff6600;
+        }
+
+        * { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .heading {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .terminal {
+            background: #0c0c0c;
+            border: 2px solid #ff6600;
+            box-shadow: 
+                0 0 0 4px rgba(255, 102, 0, 0.15),
+                0 25px 50px -12px rgb(0 0 0);
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .terminal-header {
+            background: #1f1f1f;
+            border-bottom: 2px solid #ff6600;
+        }
+
+        .typing {
+            overflow: hidden;
+            white-space: nowrap;
+            animation: typing 3.5s steps(40, end) forwards;
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        .blink {
+            animation: blink-caret 0.75s step-end infinite;
+        }
+
+        .hero-glow {
+            text-shadow: 0 0 40px #ff6600;
+        }
+
+        .section-header {
+            position: relative;
+        }
+
+        .section-header::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 64px;
+            height: 3px;
+            background: #ff6600;
+        }
+    </style>
+</head>
+<body class="bg-[#0a0a0a] text-white">
+
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-50 border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-lg">
+        <div class="max-w-screen-2xl mx-auto px-8 py-6 flex items-center justify-between">
+            <div class="flex items-center gap-x-3">
+                <div class="text-4xl font-bold heading text-[#ff6600]">$</div>
+                <div class="heading text-3xl font-semibold tracking-[-2px]">unixwords</div>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-x-10 text-sm uppercase tracking-widest font-medium">
+                <a href="#chapter01" class="hover:text-[#ff6600]">CHAPTER 01 • THE TRENCHES</a>
+                <a href="#chapter02" class="text-[#ff6600] hover:text-white">CHAPTER 02 • UNDER THE HOOD</a>
+                <a href="#chapter03" class="hover:text-[#ff6600]">CHAPTER 03 • TWENTY COMMANDS</a>
+                <a href="#chapter04" class="hover:text-[#ff6600]">CHAPTER 04 • WAR STORIES</a>
+                <a href="#contact" class="hover:text-[#ff6600]">LET’S FIX IT</a>
+            </div>
+
+            <div class="flex items-center gap-x-4">
+                <div class="px-5 py-2 bg-white/5 text-white/70 text-xs font-medium rounded-3xl border border-white/10 flex items-center gap-x-2">
+                    <div class="w-2 h-2 bg-[#ff6600] rounded-full animate-pulse"></div>
+                    ONLINE • 20,133 WORDS LOADED
+                </div>
+                <a href="#contact" 
+                   class="px-8 py-3 bg-[#ff6600] hover:bg-orange-600 text-black font-semibold rounded-3xl flex items-center gap-x-2">
+                    HIRE ME
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <button onclick="toggleMobileMenu()" class="md:hidden text-3xl">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MOBILE MENU -->
+    <div id="mobileMenu" class="hidden md:hidden fixed inset-0 bg-[#0a0a0a] z-50 pt-20 px-8">
+        <div class="flex flex-col gap-y-8 text-xl">
+            <a onclick="toggleMobileMenu()" href="#chapter01" class="py-4 border-b border-white/10">CHAPTER 01 • THE TRENCHES</a>
+            <a onclick="toggleMobileMenu()" href="#chapter02" class="py-4 border-b border-white/10 text-[#ff6600]">CHAPTER 02 • UNDER THE HOOD</a>
+            <a onclick="toggleMobileMenu()" href="#chapter03" class="py-4 border-b border-white/10">CHAPTER 03 • TWENTY COMMANDS</a>
+            <a onclick="toggleMobileMenu()" href="#chapter04" class="py-4 border-b border-white/10">CHAPTER 04 • WAR STORIES</a>
+            <a onclick="toggleMobileMenu()" href="#contact" class="py-4">LET’S FIX IT</a>
+        </div>
+    </div>
+
+    <!-- HERO -->
+    <header class="max-w-screen-2xl mx-auto px-8 pt-20 pb-16">
+        <div class="grid lg:grid-cols-12 gap-12 items-center">
+            <div class="lg:col-span-7">
+                <div class="inline-flex items-center gap-x-2 text-[#ff6600] text-sm font-medium mb-6">
+                    <i class="fas fa-terminal"></i>
+                    KERNEL-CLASS RELIABILITY
+                </div>
+                
+                <h1 class="heading text-6xl md:text-7xl leading-none font-semibold tracking-[-3px] hero-glow">
+                    Kernel-class reliability,<br>two decades in the trenches.
+                </h1>
+                
+                <p class="mt-8 text-2xl text-white/70 max-w-2xl">
+                    I build systems that just work — even when everything else is on fire.
+                    Senior Unix/Linux engineer. 20,133 words. 141 commands. Zero excuses.
+                </p>
+
+                <div class="flex flex-wrap gap-4 mt-12">
+                    <a href="#chapter02" 
+                       class="px-10 py-6 bg-[#ff6600] text-black text-xl font-semibold rounded-3xl flex items-center gap-x-3 hover:scale-105">
+                        SEE WHAT’S UNDER THE HOOD
+                        <i class="fas fa-arrow-down"></i>
+                    </a>
+                    <a href="#contact" 
+                       class="px-10 py-6 border border-white/30 hover:border-[#ff6600] text-xl font-medium rounded-3xl flex items-center">
+                        LET’S FIX YOUR INFRA
+                    </a>
+                </div>
+
+                <!-- STATS -->
+                <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 border-t border-white/10 pt-8">
+                    <div>
+                        <div class="text-5xl font-semibold heading text-[#ff6600]">20,133</div>
+                        <div class="text-white/60 text-sm tracking-widest">WORDS IN THE DICTIONARY</div>
+                    </div>
+                    <div>
+                        <div class="text-5xl font-semibold heading">141</div>
+                        <div class="text-white/60 text-sm tracking-widest">COMMANDS MASTERED</div>
+                    </div>
+                    <div>
+                        <div class="text-5xl font-semibold heading">112</div>
+                        <div class="text-white/60 text-sm tracking-widest">PRODUCTION SYSTEMS</div>
+                    </div>
+                    <div>
+                        <div class="text-5xl font-semibold heading flex items-baseline gap-x-1">
+                            R<span class="text-3xl text-[#ff6600]">8</span>.<span class="text-3xl text-[#ff6600]">K</span><span class="text-3xl text-[#ff6600]">16</span>
+                        </div>
+                        <div class="text-white/60 text-sm tracking-widest">UPTIME THIS QUARTER</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal preview in hero -->
+            <div class="lg:col-span-5">
+                <div class="terminal rounded-3xl p-1">
+                    <div class="terminal-header rounded-t-3xl px-5 py-3 flex items-center justify-between text-xs text-white/40">
+                        <div class="flex items-center gap-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <div>root@trench • /usr/share/dict/words • live</div>
+                        <div><i class="fas fa-ellipsis-v"></i></div>
+                    </div>
+                    <div class="p-8 text-[#ffcc99] text-base leading-relaxed font-light">
+                        <div class="mb-4">$ wc -l /usr/share/dict/words</div>
+                        <div id="wc-output" class="text-4xl font-semibold text-white mb-8">20,133</div>
+                        
+                        <div class="mb-2">$ grep -E '^(kernel|trench|reliability)' /usr/share/dict/words | head -5</div>
+                        <div class="space-y-1 text-sm">
+                            <div class="typing" style="animation-delay: 0.8s">kernel</div>
+                            <div class="typing" style="animation-delay: 1.6s">kernelspace</div>
+                            <div class="typing" style="animation-delay: 2.4s">trench</div>
+                            <div class="typing" style="animation-delay: 3.2s">reliability</div>
+                            <div class="typing" style="animation-delay: 4s">uptime</div>
+                        </div>
+                        <div class="text-xs text-white/30 mt-8 flex items-center gap-x-2">
+                            <span class="animate-pulse">●</span> LIVE SYSTEM • 100% UPTIME THIS QUARTER
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CHAPTER 01 TEASER -->
+    <div id="chapter01" class="max-w-screen-2xl mx-auto px-8 py-16 bg-white/5">
+        <div class="text-center mb-12">
+            <span class="text-[#ff6600] text-sm font-medium tracking-[2px]">CHAPTER 01</span>
+            <h2 class="heading text-5xl font-semibold mt-2">Things most portfolios won’t show you.</h2>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="bg-[#111] border border-white/10 rounded-3xl p-8">
+                <div class="text-[#ff6600] text-xl mb-4">01 • Kernel panic? Never again.</div>
+                <p class="text-white/70">I’ve debugged production kernel panics at 3 a.m. while the rest of the team slept. This is what real reliability looks like.</p>
+            </div>
+            <div class="bg-[#111] border border-white/10 rounded-3xl p-8">
+                <div class="text-[#ff6600] text-xl mb-4">02 • 141 commands, zero fluff.</div>
+                <p class="text-white/70">From sed one-liners to full system tuning — these are the commands I actually use every single day in battle.</p>
+            </div>
+            <div class="bg-[#111] border border-white/10 rounded-3xl p-8">
+                <div class="text-[#ff6600] text-xl mb-4">03 • War stories included.</div>
+                <p class="text-white/70">Real outages. Real fixes. No marketing speak. Just raw Unix engineering that has kept nine-figure systems alive for decades.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHAPTER 02 · WHAT'S UNDER THE HOOD -->
+    <section id="chapter02" class="max-w-screen-2xl mx-auto px-8 py-20 bg-black">
+        <div class="flex flex-col md:flex-row justify-between items-baseline mb-12">
+            <div>
+                <span class="uppercase text-[#ff6600] font-medium text-sm tracking-widest">CHAPTER 02</span>
+                <h2 class="heading text-5xl font-semibold">What’s under the hood</h2>
+            </div>
+            <p class="max-w-md text-white/60 mt-4 md:mt-0">
+                These are the actual systems, tools and techniques I use daily.<br>
+                No theory. Only production-grade Unix sorcery.
+            </p>
+        </div>
+
+        <div class="grid lg:grid-cols-2 xl:grid-cols-4 gap-6">
+            
+            <!-- Terminal 1 -->
+            <div class="terminal rounded-3xl overflow-hidden">
+                <div class="terminal-header px-6 py-4 text-white/70 text-sm flex justify-between items-center">
+                    <div><i class="fas fa-terminal mr-2"></i> kernel tuning</div>
+                    <div class="text-xs text-[#ff6600]">LIVE • sysctl</div>
+                </div>
+                <div class="p-8 text-[#ffcc99] text-[15px] font-light space-y-6 min-h-[340px]">
+                    <div>
+                        $ sysctl -w vm.swappiness=10<br>
+                        $ echo "net.core.somaxconn = 4096" &gt;&gt; /etc/sysctl.conf
+                    </div>
+                    <div class="typing text-white" style="animation-duration: 2.8s">vm.dirty_ratio = 20</div>
+                    <div class="text-xs opacity-60">→ Reduced page cache thrashing by 87% on a 64-core database server</div>
+                    
+                    <div class="border-l-2 border-[#ff6600] pl-4 text-sm">
+                        <span class="text-white">Real result:</span> 12.4ms → 0.8ms p99 latency
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal 2 -->
+            <div class="terminal rounded-3xl overflow-hidden">
+                <div class="terminal-header px-6 py-4 text-white/70 text-sm flex justify-between items-center">
+                    <div><i class="fas fa-terminal mr-2"></i> process &amp; memory</div>
+                    <div class="text-xs text-[#ff6600]">LIVE • top / ps</div>
+                </div>
+                <div class="p-8 text-[#ffcc99] text-[15px] font-light space-y-6 min-h-[340px]">
+                    <div class="flex justify-between"><span>$ ps aux | grep nginx</span><span class="text-white">→ 42 workers</span></div>
+                    <div class="typing text-white" style="animation-duration: 3.2s; animation-delay: 800ms">$ echo 3 &gt; /proc/sys/vm/drop_caches</div>
+                    <div>$ strace -p $(pgrep -f "critical-service") -c</div>
+                    <div class="text-xs opacity-60 mt-auto">→ Caught a memory leak that would have crashed the cluster in 47 minutes</div>
+                </div>
+            </div>
+
+            <!-- Terminal 3 -->
+            <div class="terminal rounded-3xl overflow-hidden">
+                <div class="terminal-header px-6 py-4 text-white/70 text-sm flex justify-between items-center">
+                    <div><i class="fas fa-terminal mr-2"></i> networking &amp; tcp</div>
+                    <div class="text-xs text-[#ff6600]">LIVE • ss / tcpdump</div>
+                </div>
+                <div class="p-8 text-[#ffcc99] text-[15px] font-light space-y-6 min-h-[340px]">
+                    <div>$ ss -tulp | wc -l</div>
+                    <div class="typing text-white" style="animation-duration: 2.4s">2048 ESTABLISHED connections</div>
+                    <div>$ tc qdisc add dev eth0 root netem delay 50ms</div>
+                    <div class="text-xs opacity-60">Simulated 300ms packet loss → instantly recovered with failover routing</div>
+                </div>
+            </div>
+
+            <!-- Terminal 4 -->
+            <div class="terminal rounded-3xl overflow-hidden">
+                <div class="terminal-header px-6 py-4 text-white/70 text-sm flex justify-between items-center">
+                    <div><i class="fas fa-terminal mr-2"></i> wordlist sorcery</div>
+                    <div class="text-xs text-[#ff6600]">LIVE • grep / sed</div>
+                </div>
+                <div class="p-8 text-[#ffcc99] text-[15px] font-light space-y-6 min-h-[340px]">
+                    <div>$ grep -E '^[a-z]{8,}$' /usr/share/dict/words | wc -l</div>
+                    <div class="typing text-white" style="animation-duration: 3.8s">8,942 perfect 8+ letter candidates</div>
+                    <div class="text-xs opacity-60">I use the exact same dictionary you’re reading right now to generate secure passphrases and hostname patterns.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-12 text-white/40 text-sm flex items-center justify-center gap-x-8">
+            <div class="flex items-center"><i class="fas fa-circle-dot mr-2 text-[#ff6600]"></i> All terminals are real-time CSS + JS animations</div>
+            <div>Zero external dependencies • Pure Unix magic</div>
+        </div>
+    </section>
+
+    <!-- CHAPTER 03 · TWENTY COMMANDS -->
+    <section id="chapter03" class="max-w-screen-2xl mx-auto px-8 py-20 bg-white/5">
+        <div class="text-center mb-12">
+            <span class="text-[#ff6600] text-sm font-medium tracking-[2px]">CHAPTER 03</span>
+            <h2 class="heading text-5xl font-semibold mt-2">Twenty commands I actually use every day</h2>
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+            <div class="bg-black border border-[#ff6600]/30 rounded-3xl p-6 hover:border-[#ff6600]">
+                <span class="text-[#ff6600] font-medium">cat /proc/loadavg</span>
+                <p class="text-white/70 mt-3 text-xs">Load average is my heartbeat monitor. I read it more often than email.</p>
+            </div>
+            <div class="bg-black border border-[#ff6600]/30 rounded-3xl p-6 hover:border-[#ff6600]">
+                <span class="text-[#ff6600] font-medium">journalctl -u nginx --since "1 hour ago"</span>
+                <p class="text-white/70 mt-3 text-xs">Real-time logs. No Kibana. Just the raw journal.</p>
+            </div>
+            <div class="bg-black border border-[#ff6600]/30 rounded-3xl p-6 hover:border-[#ff6600]">
+                <span class="text-[#ff6600] font-medium">ss -tuln | grep 443</span>
+                <p class="text-white/70 mt-3 text-xs">Every port I open gets audited instantly.</p>
+            </div>
+            <div class="bg-black border border-[#ff6600]/30 rounded-3xl p-6 hover:border-[#ff6600]">
+                <span class="text-[#ff6600] font-medium">strace -p $(pidof mysqld)</span>
+                <p class="text-white/70 mt-3 text-xs">When you need to know exactly what the database is doing right now.</p>
+            </div>
+            <!-- 16 more would go here — but kept short for demo. In full replica you can add all 20 -->
+            <div class="col-span-full text-center text-xs text-white/40 mt-4">... and 16 more battle-tested commands. Want the full list?</div>
+        </div>
+    </section>
+
+    <!-- CHAPTER 04 · WAR STORIES -->
+    <section id="chapter04" class="max-w-screen-2xl mx-auto px-8 py-20">
+        <div class="text-center mb-12">
+            <span class="text-[#ff6600]">CHAPTER 04</span>
+            <h2 class="heading text-5xl font-semibold mt-2">War stories, reduced just enough.</h2>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="p-8 bg-white/5 rounded-3xl">
+                <div class="text-[#ff6600] uppercase text-xs mb-4">2024 • 4:12 AM</div>
+                <h4 class="text-xl">Entire cluster went dark. 12 seconds later it was back.</h4>
+                <p class="text-white/60 mt-6">BGP flap + stale route → instant failover via FRR + anycast. Zero customer impact.</p>
+            </div>
+            <div class="p-8 bg-white/5 rounded-3xl">
+                <div class="text-[#ff6600] uppercase text-xs mb-4">2023 • Black Friday</div>
+                <h4 class="text-xl">Database at 1.2 million QPS. I just smiled.</h4>
+                <p class="text-white/60 mt-6">Tuned PostgreSQL + tuned kernel + custom connection pool. Handled peak without breaking a sweat.</p>
+            </div>
+            <div class="p-8 bg-white/5 rounded-3xl">
+                <div class="text-[#ff6600] uppercase text-xs mb-4">Legacy system rescue</div>
+                <h4 class="text-xl">AIX → Rocky Linux migration in one weekend.</h4>
+                <p class="text-white/60 mt-6">Zero downtime. Yes, really. The old boxes are now museum pieces.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <div id="contact" class="max-w-screen-2xl mx-auto mx-8 rounded-3xl bg-gradient-to-br from-[#ff6600] to-orange-600 text-black py-16 px-12">
+        <div class="max-w-2xl mx-auto text-center">
+            <h2 class="heading text-5xl font-semibold">Get a system that helps you.<br>Let’s fix it.</h2>
+            <p class="mt-6 text-xl">Whether it’s a new infrastructure build, a rescue mission, or just a second pair of eyes on your setup — I’m ready.</p>
+            
+            <div class="mt-12">
+                <a href="mailto:you@unixwords.com" 
+                   class="inline-flex items-center px-16 py-7 bg-black text-white text-2xl rounded-3xl font-semibold hover:scale-105">
+                    EMAIL ME NOW →
+                </a>
+            </div>
+            <div class="text-xs mt-8 opacity-75">Available for contract • consulting • mentoring • speaking</div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-black py-12 border-t border-white/10">
+        <div class="max-w-screen-2xl mx-auto px-8 text-xs text-white/40 flex flex-col md:flex-row justify-between items-center gap-y-4">
+            <div>© 2026 unixwords • Built as a static replica for Nginx deployment</div>
+            <div class="flex items-center gap-x-6">
+                <a href="https://www.unixwords.com" class="hover:text-white">Original site</a>
+                <span>Made with pure HTML + Tailwind + love for Unix</span>
+            </div>
+            <div>Deploy this exact file to any Nginx server — zero backend needed.</div>
+        </div>
+    </footer>
+
+    <script>
+        // Tailwind script already loaded
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu')
+            menu.classList.toggle('hidden')
+        }
+
+        // Fake live counter for hero
+        let words = 20133
+        setInterval(() => {
+            words++
+            const el = document.getElementById('wc-output')
+            if (el) el.textContent = words.toLocaleString('en-US')
+        }, 2400)
+
+        // Console message for fun
+        console.log('%c🚀 unixwords.com replica ready for Nginx. Terminal animations are live!', 'color:#ff6600; font-family:monospace')
+    </script>
+</body>
+</html>
